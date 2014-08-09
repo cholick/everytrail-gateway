@@ -41,7 +41,7 @@ apply plugin: 'shadow'
 
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 shadow {
-    //outputFile = file('everytrail.jar')
+    outputFile = file('everytrail.jar')
     transformer(ServiceFileTransformer)
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
@@ -52,5 +52,8 @@ jar {
         attributes 'Main-Class': mainClassName
     }
 }
+
+build.mustRunAfter clean
+shadowJar.mustRunAfter build
 
 task stage(dependsOn: ['clean', 'build', 'shadowJar'])
