@@ -1,0 +1,56 @@
+apply plugin: 'groovy'
+apply plugin: 'application'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+mainClassName = 'com.cholick.everytrail.EverytrailApplication'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.4'
+
+    compile 'io.dropwizard:dropwizard-core:0.7.1'
+    //jersey-client needed due to http://issues.gradle.org/browse/GRADLE-2647
+    compile 'com.sun.jersey:jersey-client:1.18'
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter() // for shadowJar
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
+    }
+}
+
+run {
+    args = ['server', 'app.yaml']
+    //jvmArgs = ['-Ddw.server.applicationConnectors[0].port=8000']
+    //jvmArgs = ["-javaagent:${new File("$buildDir/agent/springloaded-${springloadedVersion}.jar").absolutePath}", '-noverify']
+}
+
+/*-------- Jar for deployment --------*/
+apply plugin: 'shadow'
+
+import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
+shadow {
+    outputFile = file('everytrail.jar')
+    transformer(ServiceFileTransformer)
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+defaultTasks 'clean', 'build', 'shadowJar'
