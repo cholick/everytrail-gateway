@@ -17,6 +17,7 @@ dependencies {
     compile 'io.dropwizard:dropwizard-core:0.7.1'
     //jersey-client needed due to http://issues.gradle.org/browse/GRADLE-2647
     compile 'com.sun.jersey:jersey-client:1.18'
+    compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 }
 
 buildscript {
@@ -32,6 +33,7 @@ buildscript {
 
 run {
     args = ['server', 'app.yaml']
+    //jvmArgs = ['-Xdebug',  '-Xnoagent', '-Djava.compiler=NONE', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005']
     //jvmArgs = ['-Ddw.server.applicationConnectors[0].port=8000']
     //jvmArgs = ["-javaagent:${new File("$buildDir/agent/springloaded-${springloadedVersion}.jar").absolutePath}", '-noverify']
 }

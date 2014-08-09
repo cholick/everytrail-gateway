@@ -16,7 +16,7 @@ class EverytrailApplication extends Application<AppConfiguration> {
 
     @Override
     void run(AppConfiguration configuration, Environment environment) throws Exception {
-        environment.jersey().register(HelloResource)
+        environment.jersey().register(SearchResource)
     }
 
 }
