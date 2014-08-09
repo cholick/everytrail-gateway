@@ -25,6 +25,8 @@ class SearchResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     Map hike(Map post) {
+        log.info post as String
+
         Map origin = DEFAULT_ORIGIN
         if (post.address) {
             try {
@@ -32,7 +34,7 @@ class SearchResource {
             } catch (Exception e) {
                 log.error(e.message, e)
                 return [
-                        error: 'Unable to geocode address'
+                        error: "I can't geocode that address"
                 ]
             }
         }
@@ -58,15 +60,15 @@ class SearchResource {
                     def hike = response.guides.guide[childIndex]
                     return buildJson(hike)
                 } else {
-                    return [error: 'No results fount']
+                    return [error: "Everytrail didn't find any matching hikes"]
                 }
             } else {
                 log.error(response.text())
-                return [error: 'Everytrail query failed']
+                return [error: "Everytrail didn't respond to my query"]
             }
         } catch (Exception e) {
             log.error(e.message, e)
-            return [error: 'Everytrail query failed']
+            return [error: "Everytrail didn't respond to my query"]
         }
 
     }
