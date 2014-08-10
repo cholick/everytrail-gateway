@@ -1,6 +1,7 @@
 package com.cholick.everytrail
 
 import io.dropwizard.Application
+import io.dropwizard.assets.AssetsBundle
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 
@@ -12,6 +13,7 @@ class EverytrailApplication extends Application<AppConfiguration> {
 
     @Override
     void initialize(Bootstrap<AppConfiguration> bootstrap) {
+        bootstrap.addBundle(new AssetsBundle('/status', '/status'));
     }
 
     @Override
