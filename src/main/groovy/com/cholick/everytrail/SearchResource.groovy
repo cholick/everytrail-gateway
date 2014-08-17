@@ -1,7 +1,10 @@
 package com.cholick.everytrail
 
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.RESTClient
+import com.cholick.everytrail.domain.Coordinate
+import com.cholick.everytrail.domain.Query
+import com.cholick.everytrail.external.MapsGateway
+import com.cholick.everytrail.external.SearchGateway
+import com.cholick.everytrail.external.SearchGateway.NoHikesException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -14,91 +17,38 @@ import javax.ws.rs.core.MediaType
 @Path('/search')
 @Produces(MediaType.APPLICATION_JSON)
 class SearchResource {
-    private static final Logger log = LoggerFactory.getLogger(this)
+    private static Logger log = LoggerFactory.getLogger(this)
 
-    static final MAPS_KEY = System.getenv('MAPS_KEY')
-    static final EVERYTRAIL_KEY = System.getenv('EVERYTRAIL_KEY')
-    static final EVERYTRAIL_SECRET = System.getenv('EVERYTRAIL_SECRET')
+    MapsGateway mapsGateway
+    SearchGateway searchGateway
 
-    static final Map<String, Number> DEFAULT_ORIGIN = [lat: 47.6814875, lng: -122.2087353]
+    SearchResource(MapsGateway mapsGateway, SearchGateway searchGateway) {
+        this.mapsGateway = mapsGateway
+        this.searchGateway = searchGateway
+    }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Map hike(Map post) {
-        log.info post as String
+    Map hike(Query query) {
+        log.info query as String
 
-        Map origin = DEFAULT_ORIGIN
-        if (post.address) {
-            try {
-                origin = geocode(post.address)
-            } catch (Exception e) {
-                log.error(e.message, e)
-                return [
-                        error: "I can't geocode that address"
-                ]
-            }
-        }
-
-        def everytrailRequest = new HTTPBuilder("http://${EVERYTRAIL_KEY}:${EVERYTRAIL_SECRET}@www.everytrail.com/")
-        def everyTrailRequestParams = [
-                path : 'api/index/search',
-                query: [
-                        lat      : origin.lat, lon: origin.lng,
-                        proximity: post.within ?: 100,
-                        activities: '5',
-                        limit    : 30
-                ]
-        ]
-
+        Coordinate origin
         try {
-            def response = everytrailRequest.get(everyTrailRequestParams)
-            def statusMessage = response.@status.text()
-            if (statusMessage == 'success') {
-                Integer returned = Integer.parseInt(response.guides.@returnedCount.text())
-                if (returned) {
-                    Integer childIndex = Math.random() * returned
-                    def hike = response.guides.guide[childIndex]
-                    return buildJson(hike)
-                } else {
-                    return [error: "Everytrail didn't find any matching hikes"]
-                }
-            } else {
-                log.error(response.text())
-                return [error: "Everytrail didn't respond to my query"]
-            }
+            origin = mapsGateway.geocode(query.address)
         } catch (Exception e) {
             log.error(e.message, e)
-            return [error: "Everytrail didn't respond to my query"]
+            return [error: "I can't geocode that address"]
         }
 
-    }
-
-    private Map geocode(String address) {
-        def geocoder = new RESTClient("https://maps.googleapis.com")
-        def response = geocoder.get(
-                path: "/maps/api/geocode/json",
-                query: [key: MAPS_KEY, address: address]
-        )
-
-        if (response.status == 200 && response.data.status == 'OK') {
-            return response.data.results[0].geometry.location
-        } else {
-            throw new Exception()
+        Map response
+        try {
+            response = searchGateway.search(origin, query.within ?: 100)
+        } catch (NoHikesException nhe) {
+            response = [error: "Everytrail didn't find any matching hikes"]
+        } catch (Exception e) {
+            response = [error: "Everytrail didn't respond to my query (their API can be hit & miss)"]
         }
-    }
-
-    private Map buildJson(hike) {
-        Map json = [
-                title: hike.title.text(),
-                url  : 'http://www.everytrail.com/guide/' + hike.url.text(),
-                lat  : hike.location.@lat.text(),
-                lon  : hike.location.@lon.text()
-
-        ]
-        if (Integer.parseInt(hike.containsPictures.text())) {
-            json.image = hike.picture[0].fullsize.text()
-        }
-        return json
+        return response
     }
 
 }

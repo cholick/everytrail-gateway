@@ -4,7 +4,7 @@ apply plugin: 'application'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-mainClassName = 'com.cholick.everytrail.EverytrailApplication'
+mainClassName = 'com.cholick.everytrail.EverytrailApp'
 
 repositories {
     mavenLocal()
@@ -19,6 +19,11 @@ dependencies {
     //jersey-client needed due to http://issues.gradle.org/browse/GRADLE-2647
     compile 'com.sun.jersey:jersey-client:1.18'
     compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+
+    testCompile('io.dropwizard:dropwizard-testing:0.7.1')
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile('cglib:cglib-nodep:2.2.2')
+    testCompile('org.objenesis:objenesis:2.1')
 }
 
 buildscript {
@@ -34,9 +39,7 @@ buildscript {
 
 run {
     args = ['server', 'app.yaml']
-    //jvmArgs = ['-Xdebug',  '-Xnoagent', '-Djava.compiler=NONE', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005']
     //jvmArgs = ['-Ddw.server.applicationConnectors[0].port=8000']
-    //jvmArgs = ["-javaagent:${new File("$buildDir/agent/springloaded-${springloadedVersion}.jar").absolutePath}", '-noverify']
 }
 
 /*-------- Jar for deployment --------*/

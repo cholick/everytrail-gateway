@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<etIndexSearchResponse status="success">
+    <guides totalCount="0" returnedCount="0"/>
+    <trips totalCount="0" returnedCount="0"/>
+</etIndexSearchResponse>

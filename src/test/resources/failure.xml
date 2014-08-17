@@ -1,0 +1,8 @@
+<etIndexSearchResponse status="error">
+    <errors>
+        <error>
+            <code>110</code>
+            <message>The specified address could not be geocoded</message>
+        </error>
+    </errors>
+</etIndexSearchResponse>
